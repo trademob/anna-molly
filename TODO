@@ -1,0 +1,52 @@
+TODO
+
+# Spout
+[*] Spout Interface
+[ ] Sync TCP Spout.
+	Text [ ] 
+	Pickle [*] 
+[*] Async TCP Spout.
+	Text [*] 
+	Pickle [*]
+
+
+# Sink (Pipes)
+[*] Sink Interface
+	Redis Sink [ ]
+	Redis-Cluster Sink [ ]
+	Aerospike Sink [ ]
+
+# Helper
+[*] Unpickler
+	[ ] Test
+
+# Models
+	TimeSeriesTuple [ ]
+	TSV [ ]
+	CSV [ ]
+	RedisLastValue [ ]
+	RedisTimeStamped [ ]
+	AerospikeTimeStamped [ ]
+
+# Bijection 
+	Get Rid of that shit [ ] 
+
+# Sink
+	Graphite [ ]
+
+# Logging
+
+
+Known Issues:
+1. Unpickling errors in AsyncSpout
+2. Rename Sinks to Pipes
+3. Add Get Methods to Pipes
+4. Default partial args to Models
+5. Remove Bijection
+6. Data types in models
+7. Missing tests
+8. @cls methods in Spouts/Sinks
+9. Tests everywhere.
+
+
+

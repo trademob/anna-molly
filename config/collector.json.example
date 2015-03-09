@@ -1,0 +1,31 @@
+{
+  "router": {
+    "blacklist": [
+      "MX",
+      "osys.*"
+    ],
+    "whitelist": {
+      ".*": [
+        {
+          "RedisTimeStamped": {
+            "ttl": 10000
+          }
+        }
+      ]
+    }
+  },
+  "writer": {
+    "RedisSink": {
+      "host": "127.0.0.1",
+      "port": 6379,
+      "db": 3,
+      "pipeline_size": 50
+    }
+  },
+  "listener": {
+    "CarbonAsyncTcpSpout": {
+      "host": "0.0.0.0",
+      "port": 2014
+    }
+  }
+}

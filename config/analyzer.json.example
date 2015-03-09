@@ -1,0 +1,24 @@
+{
+  "celery": {
+    "broker": {
+      "host": "redis://127.0.0.1:6379/0"
+    },
+    "backend": {
+      "host": "redis://127.0.0.1:6379/2"
+    },
+    "time_limit": "120"
+  },
+  "metric_sink": {
+    "RedisSink": {
+      "host": "127.0.0.1",
+      "port": 6379
+    }
+  },
+  "output_sink": {
+    "GraphiteSink": {
+      "host": "storage.metrics.foo.com",
+      "port": 2003,
+      "url": "graphite.foo.com"
+    }
+  }
+}
