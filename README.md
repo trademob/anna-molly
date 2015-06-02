@@ -239,3 +239,6 @@ OutputSink
 }
 ```
 The plugins push the result data into the OutputSink.
+
+Algorithms.
+Refer the [wiki](https://github.com/trademob/anna-molly/wiki).
