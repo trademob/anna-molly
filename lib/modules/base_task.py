@@ -2,10 +2,8 @@ import sink
 
 
 class BaseTask(object):
-
     """
     """
-
     def __init__(self, config, logger, resource={}):
         self.config = config
         self.logger = logger
@@ -29,7 +27,7 @@ class BaseTask(object):
 
     @property
     def output_sink(self):
-        return self.output_sink
+        return self._output_sink
 
     @output_sink.setter
     def output_sink(self, value):

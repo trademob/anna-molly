@@ -1,5 +1,3 @@
-WIP
-
 # What is Anna-Molly?
 
 Anna-Molly is a scalable system to collect metric data for dynamic monitoring. 
@@ -12,18 +10,18 @@ Anna-Molly is a scalable system to collect metric data for dynamic monitoring.
   - Trigger Events based on the results of the algorithm.   
 
 
-Anna-Molly has two components.   
+Anna-Molly has two components:
     1. Collector  
     2. Task Runner  
 
 
-* The collector is responsible for receiving the Metrics from a Spout (Metric-Source) and pushing it a Sink.
+* The collector is responsible for receiving the Metrics from a Spout (Metric-Source) and pushing it to a Sink.
 
 * The Task-Runner is a celery encapsulated task, that invokes algorithm plugins that then work with the data from the Sink. The plugins can be algorithms, supporting tasks, event handlers or others.
 
 
 **A word of Caution:**
-  This is a work in progress. There are a number of moving parts in Anna-Molly. which makes configuration and setup slightly tricky. You can follow the setup guide below. In case you run into issues in setting it up. Write to us.
+  This is a work in progress. There are a number of moving parts in Anna-Molly. which makes configuration and setup slightly tricky. You can follow the setup guide below. In case you run into issues in setting it up, write to us.
 
 
 # What do I need?
@@ -47,27 +45,27 @@ Python (2.6, 2.7)
 - Bring up the Vagrant Box   
 `vagrant up`   
 
-- Configure the collector.json at `/opt/anna-molly/`   
-You can use the `/opt/anna-molly/collector.json` as a template.   
+- Configure a `collector.json` at `/opt/anna-molly/config`   
+You can use the `/opt/anna-molly/config/collector.json.example` as a template.   
 Instructions on setting-up the collector config can be found in the sections below.   
 
 - Start the Collector   
-`/opt/anna-molly/bin/collector.py --config /opt/anna-molly/config/collector.json`   
+`python /opt/anna-molly/bin/collector.py --config /opt/anna-molly/config/collector.json`   
 
 We should now have metrics being pushed to RedisSink.   
 Verify this issuing `redis-cli -p 6379 monitor`
 
 ### Setup Task-Runner/Celery
 
-Configure the `analyzer.json` at `/opt/anna-molly/`   
-You can use the `/opt/anna-molly/analyzer.json` as a template.   
+Configure a `analyzer.json` at `/opt/anna-molly/config`   
+You can use the `/opt/anna-molly/config/analyzer.json.example` as a template.   
 Instructions on setting-up the analyzer config can be found in the sections below.   
 
 * Start Task-Runner/Celery   
-  `celery -A app worker` from `/opt/anna-molly/lib/`   
+  `celery -A lib.app worker -l info` from `/opt/anna-molly`   
 
 * Start Scheduler   
-  `celeryd --beat --scheduler=scheduler` from `/opt/anna-molly/utils/scheduler.py`   
+  `celery --beat --config=scheduler` from `/opt/anna-molly/utils`   
 
 
 # Terminology
@@ -102,8 +100,7 @@ For simplicity, data is stored and processed around as TimeSeriesTuple.
 
 ## Base Task
 
-Base Task module is an abstract class that all plugins inherit from. It can setup the necessary resources/connections for the plugin.   
-And exposes a `run` method which is implement by the plugins.  
+Base Task module is an abstract class that all plugins inherit from. It can setup the necessary resources/connections for the plugin and exposes a `run` method which is implemented by the plugins.  
    
 
 ## Collector Daemon
@@ -118,7 +115,7 @@ Metrics of interest can be configured in `config/collector.json`. See configurat
 ## Task Runner
 
 The task runner is an encapsulated Celery Task.   
-Any Plugin in the `/plugins. folder can be invoked by the task-runner as a task.   
+Any Plugin in the `lib/plugins` folder can be invoked by the task-runner as a task.   
 
 
 ### Poll Tasks
@@ -136,7 +133,7 @@ Plugins inherit from the BaseTask module and are responsible for setting up reso
 There are three configuration files:
 1. collector.json: Used by the `Collector`.   
 2. analyzer.json: Used by `Celery/BaseTask`.   
-3. services.json: Used by Plugins for algorithm specific configuration.   
+3. services.json: Used by Plugins for algorithm specific configuration (see [wiki](https://github.com/trademob/anna-molly/wiki))   
 
 Note: The configuration needs to be simplified and will be worked on shortly.
 
@@ -165,7 +162,7 @@ Config for routing/modeling the metrics.
 - Blacklist (Array)
 Metrics blacklisted are rejected.
 - Whitelist (Object)
-Metrics that match a whitelist are instantiaed in the models specified in the config. Other metrics are ignored.
+Metrics that match a whitelist are instantiated in the models specified in the config. Other metrics are ignored.
 
 Metrics that have N models configured, will have N objects stored in the Sink.
 
@@ -198,7 +195,9 @@ Needs Sink
 Needs Spout and Spout configuration.
 
 ## analyzer.json
+
 Celery
+
 ```json
 {
   "celery": {
@@ -210,10 +209,13 @@ Celery
     },
     "time_limit": "120"
   }
-}```
+}
+```
+
 Basic Celery configuration. Can be used with a broker/backend of your choice. Refer Celery Docs for more information.
 
 MetricSink
+
 ```json
 {
   "metric_sink": {
@@ -224,7 +226,8 @@ MetricSink
   }
 }
 ```
-MetricSink is input the Sink from which the plugins will fetch the Metric data for analysis. It must provide configuration specific to the Sink implementation
+
+MetricSink is input the Sink from which the plugins will fetch the Metric data for analysis. It must provide configuration specific to the Sink implementation.
 
 OutputSink
 ```json
@@ -240,5 +243,8 @@ OutputSink
 ```
 The plugins push the result data into the OutputSink.
 
-Algorithms.
-Refer the [wiki](https://github.com/trademob/anna-molly/wiki).
+## Algorithms
+
+* [Seasonal Trend Decomposition](https://github.com/trademob/anna-molly/wiki/Seasonal-Trend-Decomposition)
+* [Tukeys Outlier Filter](https://github.com/trademob/anna-molly/wiki/Tukey's-Outlier-Filter)
+

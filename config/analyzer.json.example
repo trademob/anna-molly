@@ -11,14 +11,16 @@
   "metric_sink": {
     "RedisSink": {
       "host": "127.0.0.1",
-      "port": 6379
+      "port": 6379,
+      "db": 3
     }
   },
   "output_sink": {
     "GraphiteSink": {
       "host": "storage.metrics.foo.com",
       "port": 2003,
-      "url": "graphite.foo.com"
+      "url": "graphite.foo.com",
+      "prefix": "FooBar"
     }
   }
 }

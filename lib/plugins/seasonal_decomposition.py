@@ -151,16 +151,15 @@ class SeasonalDecomposition(BaseTask):
         (seasonal, trend, error, state) = state
         prefix = '%s.%s' % (self.plugin, self.service)
         now = int(time())
+        tuples = []
         for name, value in state.iteritems():
-            self.sink.write(
-                TimeSeriesTuple('%s.%s' % (prefix, name), now, value))
+            tuples.append(TimeSeriesTuple('%s.%s' % (prefix, name), now, value))
 
-        self.sink.write(
-            TimeSeriesTuple('%s.%s' % (prefix, 'seasonal'), now, seasonal))
-        self.sink.write(
-            TimeSeriesTuple('%s.%s' % (prefix, 'trend'), now, trend))
-        self.sink.write(
-            TimeSeriesTuple('%s.%s' % (prefix, 'error'), now, error))
+        tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'seasonal'), now, seasonal))
+        tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'trend'), now, trend))
+        tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'error'), now, error))
+
+        self.output_sink.write(tuples)
 
     def run(self):
         data = self.read()
