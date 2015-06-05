@@ -31,7 +31,7 @@ Python (2.6, 2.7)
 
   `sudo apt-get install -y build-essential python-pip r-base python-celery redis-server automake`
 
-  `sudo pip -r /opt/anna-molly/requirements.txt`
+  `sudo pip install -r /opt/anna-molly/requirements.txt`
 
 
 
@@ -65,7 +65,7 @@ Instructions on setting-up the analyzer config can be found in the sections belo
   `celery -A lib.app worker -l info` from `/opt/anna-molly`   
 
 * Start Scheduler   
-  `celery --beat --config=scheduler` from `/opt/anna-molly/utils`   
+  `celery --beat --config=scheduler` from `/opt/anna-molly/util`   
 
 
 # Terminology
