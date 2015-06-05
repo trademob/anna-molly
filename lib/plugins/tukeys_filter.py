@@ -26,7 +26,7 @@ class TukeysFilter(BaseTask):
         quantile_75 = self.params['quantile_75']
         metrics = self.params['metrics']
         delay = self.params.get('offset', 0)
-        maxmium_delay = self.params.get('maxmium_delay', 600)
+        maximum_delay = self.params.get('maximum_delay', 600)
 
         # read metrics from metric_sink
         quantile_25 = [i for i in self.metric_sink.read(quantile_25)]
@@ -45,13 +45,13 @@ class TukeysFilter(BaseTask):
         # find closest datapoint to now() (corrected by delay) if not too old
         time_now = time() - delay
         quantile_25 = get_closest_datapoint(quantile_25, time_now)
-        if time_now - quantile_25.timestamp > maxmium_delay:
+        if time_now - quantile_25.timestamp > maximum_delay:
             self.logger.error('Quantile25 Value is too old (%d sec). Exiting' % (
                 time_now - quantile_25.timestamp))
             return None
         quantile_25 = quantile_25.value
         quantile_75 = get_closest_datapoint(quantile_75, time_now)
-        if time_now - quantile_75.timestamp > maxmium_delay:
+        if time_now - quantile_75.timestamp > maximum_delay:
             self.logger.error('Quantile75 Value is too old (%d sec). Exiting' % (
                 time_now - quantile_75.timestamp))
             return None
@@ -66,7 +66,7 @@ class TukeysFilter(BaseTask):
         for key, metrics in grouped:
             closest_datapoint = get_closest_datapoint(
                 [metric for metric in metrics], time_now)
-            if time_now - closest_datapoint.timestamp < maxmium_delay:
+            if time_now - closest_datapoint.timestamp < maximum_delay:
                 distribution[key] = closest_datapoint.value
         if len(distribution) == 0:
             self.logger.error('No Distribution Values. Exiting')
