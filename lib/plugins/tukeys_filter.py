@@ -29,9 +29,9 @@ class TukeysFilter(BaseTask):
         maximum_delay = self.params.get('maximum_delay', 600)
 
         # read metrics from metric_sink
-        quantile_25 = [i for i in self.metric_sink.read(quantile_25)]
-        quantile_75 = [i for i in self.metric_sink.read(quantile_75)]
-        metrics = [i for i in self.metric_sink.read(metrics)]
+        quantile_25 = [i for i in self.metric_sink.iread(quantile_25)]
+        quantile_75 = [i for i in self.metric_sink.iread(quantile_75)]
+        metrics = [i for i in self.metric_sink.iread(metrics)]
         if not (len(quantile_25) * len(quantile_75) * len(metrics)):
             self.logger.error(
                 'No data found for quantile/to be checked metrics. Exiting')
@@ -46,18 +46,19 @@ class TukeysFilter(BaseTask):
         time_now = time() - delay
         quantile_25 = get_closest_datapoint(quantile_25, time_now)
         if time_now - quantile_25.timestamp > maximum_delay:
-            self.logger.error('Quantile25 Value is too old (%d sec). Exiting' % (
-                time_now - quantile_25.timestamp))
+            self.logger.error('Quantile25 Value is too old (Timestamp: %d) of: %s. Exiting' % (
+                quantile_25.timestamp, quantile_25.name))
             return None
         quantile_25 = quantile_25.value
         quantile_75 = get_closest_datapoint(quantile_75, time_now)
         if time_now - quantile_75.timestamp > maximum_delay:
-            self.logger.error('Quantile75 Value is too old (%d sec). Exiting' % (
-                time_now - quantile_75.timestamp))
+            self.logger.error('Quantile75 Value is too old (Timestamp: %d) of: %s. Exiting' % (
+                quantile_75.timestamp, quantile_75.name))
             return None
         quantile_75 = quantile_75.value
         if quantile_25 > quantile_75:
-            self.logger.error('Inconsistent Quantile Values. Exiting')
+            self.logger.error('Inconsistent Quantile Values (Q25: %f, Q75: %f). Exiting' % (
+                quantile_25, quantile_75))
             return None
 
         # group by metric (e.g. instance) first and find then closest datapoint

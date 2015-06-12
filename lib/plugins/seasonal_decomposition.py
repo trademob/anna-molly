@@ -82,14 +82,14 @@ class SeasonalDecomposition(BaseTask):
         metric = self.params['metric']
         period_length = self.params['period_length']
         seasons = self.params['seasons']
-        default = self.params['default']
-        tdigest_json = [el for el in self.metric_sink.read(self.tdigest_key)]
+        default = False
+        tdigest_json = self.metric_sink.read(self.tdigest_key)
         if tdigest_json:
-            centroids = json.loads(tdigest_json[0])
+            centroids = json.loads(tdigest_json)
             [self.td.add(c[0], c[1]) for c in centroids]
 
         # gather data and assure requirements
-        data = [el for el in self.metric_sink.read(metric)]
+        data = [el for el in self.metric_sink.iread(metric)]
         data = sorted(data, key=lambda tup: tup.timestamp)
         step_size = find_step_size(data)
         if not step_size:
@@ -113,7 +113,7 @@ class SeasonalDecomposition(BaseTask):
         if data:
             period_length = self.params['period_length']
             error_type = self.params.get('error_type', 'norm')
-            data = [float(el.value) for el in data]
+            data = [float(el.value) if el.value else False for el in data]
 
             try:
                 r_stl = robjects.r.stl

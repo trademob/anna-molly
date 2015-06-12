@@ -58,6 +58,7 @@ class RedisSink(Sink):
                     datapoint.name,
                     pickle.dumps(datapoint.datapoint)
                 )
+                self.redis_pipeline.execute()
             if self.count % self.pipeline_size == 0:
                 self.redis_pipeline.execute()
 
@@ -65,9 +66,16 @@ class RedisSink(Sink):
         for item in self.connection.scan_iter(match=pattern):
             yield item
 
-    def read(self, pattern):
+    def iread(self, pattern):
         for item in self.connection.scan_iter(match=pattern):
             yield pickle.Unpickler(StringIO(self.connection.get(item))).load()
+
+    def read(self, pattern):
+        val = self.connection.get(pattern)
+        if val:
+            return pickle.Unpickler(StringIO(val)).load()
+        else:
+            return None
 
 
 class GraphiteSink(Sink):
