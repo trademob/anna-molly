@@ -2,14 +2,18 @@ import sys
 import unittest
 
 from mock import Mock
+from sure import expect
 
 sys.path.append("../")
 
 from fixtures.config import CONFIG
 
-import lib
+import lib.modules.config
 lib.modules.config = Mock()
 lib.modules.config.load.return_value = CONFIG
+
+import lib.app
+lib.app.task_runner = Mock()
 
 from lib.plugins import poll_seasonal_decomposition, seasonal_decomposition
 
@@ -17,12 +21,10 @@ from lib.plugins import poll_seasonal_decomposition, seasonal_decomposition
 class TestPollSeasonalDecomposition(unittest.TestCase):
 
     def setUp(self):
-        poll_seasonal_decomposition.app = Mock()
         self.test_poll_seasonal_decomposition = poll_seasonal_decomposition.PollSeasonalDecomposition(
             config=CONFIG, logger=None, options=None)
 
     def tearDown(self):
-        poll_seasonal_decomposition.app = lib.app
         self.test_poll_seasonal_decomposition = None
 
     def test_seasonal_decomposition_should_be_callable(self):
@@ -32,14 +34,12 @@ class TestPollSeasonalDecomposition(unittest.TestCase):
             'plugin').being.equal('SeasonalDecomposition')
 
     def test_run_valid_input(self):
-        poll_seasonal_decomposition.app.task_runner.delay = Mock()
-        self.algo_config = {'cpu': {'option': 0}}
+        lib.modules.config.load.return_value = CONFIG
         self.test_poll_seasonal_decomposition.run()
-        poll_seasonal_decomposition.app.task_runner.delay.assert_called_once_with(seasonal_decomposition.SeasonalDecomposition,
-                                                                                  {'options': {'option': 0}, 'plugin': 'SeasonalDecomposition', 'service': 'cpu'})
+        lib.app.task_runner.delay.assert_called_once_with(seasonal_decomposition.SeasonalDecomposition, {
+            'params': {'options': []}, 'plugin': 'SeasonalDecomposition', 'service': 'service1'})
 
-    def test_run_valid_input(self):
-        poll_seasonal_decomposition.app.task_runner.delay = Mock()
-        self.algo_config = {'cpu': None}
+    def test_run_invalid_input(self):
+        lib.modules.config.load.return_value = {}
         self.test_poll_seasonal_decomposition.run()
-        assert not poll_seasonal_decomposition.app.task_runner.delay.called
+        assert not lib.app.task_runner.delay.called

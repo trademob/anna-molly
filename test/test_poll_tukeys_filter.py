@@ -2,28 +2,29 @@ import sys
 import unittest
 
 from mock import Mock
+from sure import expect
 
 sys.path.append("../")
 
 from fixtures.config import CONFIG
 
-import lib
+import lib.modules.config
 lib.modules.config = Mock()
 lib.modules.config.load.return_value = CONFIG
 
-from lib import app
+import lib.app
+lib.app.task_runner = Mock()
+
 from lib.plugins import poll_tukeys_filter, tukeys_filter
 
 
 class TestPollTukeysFilter(unittest.TestCase):
 
     def setUp(self):
-        poll_tukeys_filter.app = Mock()
         self.test_poll_tukeys_filter = poll_tukeys_filter.PollTukeysFilter(
             config=CONFIG, logger=None, options=None)
 
     def tearDown(self):
-        poll_tukeys_filter.app = app
         self.test_poll_tukeys_filter = None
 
     def test_seasonal_decomposition_should_be_callable(self):
@@ -33,14 +34,12 @@ class TestPollTukeysFilter(unittest.TestCase):
             'plugin').being.equal('TukeysFilter')
 
     def test_run_valid_input(self):
-        #poll_tukeys_filter.app.task_runner.delay = Mock()
-        self.algo_config = {'cpu': {'option': 0}}
+        lib.modules.config.load.return_value = CONFIG
         self.test_poll_tukeys_filter.run()
-        poll_tukeys_filter.app.task_runner.delay.assert_called_once_with(tukeys_filter.TukeysFilter,
-                                                                         {'options': {'option': 0}, 'plugin': 'TukeysFilter', 'service': 'cpu'})
+        lib.app.task_runner.delay.assert_called_once_with(tukeys_filter.TukeysFilter, {
+            'params': {'options': []}, 'plugin': 'TukeysFilter', 'service': 'service1'})
 
     def test_run_invalid_input(self):
-        poll_tukeys_filter.app.task_runner.delay = Mock()
-        self.algo_config = {'cpu': None}
+        lib.modules.config.load.return_value = {}
         self.test_poll_tukeys_filter.run()
-        assert not poll_tukeys_filter.app.task_runner.delay.called
+        assert not lib.app.task_runner.delay.called

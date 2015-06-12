@@ -37,5 +37,15 @@ CONFIG = {
         "backend": {
             "host": "someHost"
         }
+    },
+    "TukeysFilter": {
+        "service1": {
+            "options": []
+        }
+    },
+    "SeasonalDecomposition": {
+        "service1": {
+            "options": []
+        }
     }
 }
