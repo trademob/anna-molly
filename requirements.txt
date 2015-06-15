@@ -1,9 +1,16 @@
+boltons==0.5.1
+celery==3.1.18
 git-pylint-commit-hook==2.0.7
+https://github.com/trademob/t-digest/archive/v1.0.0.zip
 logilab-astng==0.24.3
 logilab-common==0.63.2
 mock==1.0.1
+numpy==1.9.2
 pylint==0.25.0
+pyuv==1.0.2
+PyYAML==3.10
 redis==2.10.3
+rpy2==2.5.6
 six==1.9.0
 sure==1.2.9
 twitter.common.app==0.3.3
@@ -17,8 +24,3 @@ twitter.common.process==0.3.3
 twitter.common.string==0.3.3
 twitter.common.util==0.3.3
 ujson==1.33
-boltons==0.5.1
-pyuv==1.0.2
-numpy==1.9.2
-rpy2==2.5.6
-https://github.com/trademob/t-digest/archive/v1.0.0.zip
