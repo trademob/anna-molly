@@ -39,9 +39,6 @@ class TestEventEmitter2(unittest.TestCase):
         expect(self.ee.events[event_key]['calls']).to.equal(0)
         expect(self.ee.events[event_key]['calls_left']).to.equal(100)
 
-    def test_add_listner_should_throw_if_handler_is_invalid(self):
-        self.ee.add_listener.when.called_with("some_reg.X", None, 0).should.throw(Exception)
-
     def test_remove_listener_should_detach_event_if_listener_count_is_one(self):
         self.ee.add_listener("some_reg.X", echo, 100)
         return_value = self.ee.remove_listener("some_reg.X", echo)
