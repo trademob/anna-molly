@@ -1,4 +1,4 @@
-# What is Anna-Molly?
+# What is Anna-Molly? ![](https://travis-ci.org/trademob/anna-molly.svg?branch=master)
 
 Anna-Molly is a scalable system to collect metric data for dynamic monitoring. 
 
