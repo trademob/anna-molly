@@ -17,7 +17,7 @@ class TukeysFilter(BaseTask):
     def __init__(self, config, logger, options):
         super(TukeysFilter, self).__init__(config, logger, resource={'metric_sink': 'RedisSink',
                                                                      'output_sink': 'GraphiteSink'})
-        self.plugin = options['plugin']
+        self.namespace = 'TukeysFilter'
         self.service = options['service']
         self.params = options['params']
 
@@ -104,7 +104,7 @@ class TukeysFilter(BaseTask):
 
     def write(self, data):
         quantile_25, quantile_75, states = data
-        prefix = '%s.%s' % (self.plugin, self.service)
+        prefix = '%s.%s' % (self.namespace, self.service)
         count = len(states)
         invalid = 0
         now = int(time())

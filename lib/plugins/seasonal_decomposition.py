@@ -22,7 +22,7 @@ class SeasonalDecomposition(BaseTask):
     def __init__(self, config, logger, options):
         super(SeasonalDecomposition, self).__init__(config, logger, resource={'metric_sink': 'RedisSink',
                                                                               'output_sink': 'GraphiteSink'})
-        self.plugin = options['plugin']
+        self.namespace = 'SeasonalDecomposition'
         self.service = options['service']
         self.params = options['params']
         self.tdigest_key = 'td:%s' % self.service
@@ -149,7 +149,7 @@ class SeasonalDecomposition(BaseTask):
 
     def write(self, state):
         (seasonal, trend, error, state) = state
-        prefix = '%s.%s' % (self.plugin, self.service)
+        prefix = '%s.%s' % (self.namespace, self.service)
         now = int(time())
         tuples = []
         for name, value in state.iteritems():

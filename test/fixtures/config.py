@@ -40,12 +40,14 @@ CONFIG = {
     },
     "TukeysFilter": {
         "service1": {
-            "options": []
+            "options": {
+                "quantile_25": "service.quartil_25"
+            }
         }
     },
     "SeasonalDecomposition": {
-        "service1": {
-            "options": []
+        "stl_service1": {
+            "metric": "system.loadavg"
         }
     }
 }
