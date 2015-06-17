@@ -66,44 +66,64 @@ class TestRedisSinkInterface(TestInterface.TestSinkInterface):
         self.my_sink.redis_pipeline.execute = self.stub_execute
         data_tuple = TimeSeriesTuple('service', 60, 1.0)
         for nr_elements_to_insert in [0, 20]:
-            redis_value = [RedisTimeStamped({"ttl": 60}, data_tuple)] * nr_elements_to_insert
+            redis_value = [
+                RedisTimeStamped({"ttl": 60}, data_tuple)] * nr_elements_to_insert
             self.my_sink.write(redis_value)
-            expected_pipeline = [("service:60", 60, (pickle.dumps(TimeSeriesTuple('service', 60, 1.0))))] * (nr_elements_to_insert % self.configuration["pipeline_size"])
+            expected_pipeline = [("service:60", 60, (pickle.dumps(TimeSeriesTuple(
+                'service', 60, 1.0))))] * (nr_elements_to_insert % self.configuration["pipeline_size"])
             expect(self.redis_pipeline_list).to.equal(expected_pipeline)
 
     def test_sink_read_keys(self):
-        keys = ['service1', 'service2', 'service3', 'service4', 'service5', 'service6']
+        keys = ['service1', 'service2', 'service3',
+                'service4', 'service5', 'service6']
         self.my_sink.connection.keys.return_value = keys
         expect(self.my_sink.read_keys(None)).to.equal(keys)
 
     def test_sink_read_should_return_RedisTimeStamped_models(self):
         data = {}
-        keys = ['service1', 'service2', 'service3', 'service4', 'service5', 'service6']
-        self.my_sink.connection.keys.return_value = ['service1', 'service2', 'service3', 'service4', 'service5', 'service6']
-        expect(self.my_sink.read_keys(None)).to.equal(keys)
+        keys = ['service1', 'service2', 'service3',
+                'service4', 'service5', 'service6']
+        self.my_sink.connection.keys.return_value = keys
 
         for i in range(1, 7):
             service_name = 'service%s' % (i)
-            data[service_name] = RedisTimeStamped({"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+            data[service_name] = RedisTimeStamped(
+                {"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+
+        data['service4'] = None
 
         def stub_get(key):
-            return pickle.dumps(data.get(key))
+            item = data.get(key)
+            if item:
+                return pickle.dumps(item)
 
         self.my_sink.connection.get = stub_get
+        count = 0
         for item in self.my_sink.read(None):
             expect(item).to.be.a(RedisTimeStamped)
+            count += 1
+        expect(count).to.equal(5)
 
     def test_sink_iread_should_return_RedisTimeStamped_models(self):
         data = {}
-        keys = ['service1', 'service2', 'service3', 'service4', 'service5', 'service6']
+        keys = ['service1', 'service2', 'service3',
+                'service4', 'service5', 'service6']
         self.my_sink.connection.scan_iter.return_value = (i for i in keys)
         for i in range(1, 7):
             service_name = 'service%s' % (i)
-            data[service_name] = RedisTimeStamped({"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+            data[service_name] = RedisTimeStamped(
+                {"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+
+        data['service4'] = None
 
         def stub_get(key):
-            return pickle.dumps(data.get(key))
+            item = data.get(key)
+            if item:
+                return pickle.dumps(item)
 
+        count = 0
         self.my_sink.connection.get = stub_get
         for item in self.my_sink.iread(None):
             expect(item).to.be.a(RedisTimeStamped)
+            count += 1
+        expect(count).to.equal(5)

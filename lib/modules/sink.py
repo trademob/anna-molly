@@ -69,11 +69,15 @@ class RedisSink(Sink):
 
     def read(self, pattern):
         for item in self.connection.keys(pattern):
-            yield pickle.Unpickler(StringIO(self.connection.get(item))).load()
+            _item = self.connection.get(item)
+            if _item:
+                yield pickle.Unpickler(StringIO(_item)).load()
 
     def iread(self, pattern):
         for item in self.connection.scan_iter(match=pattern):
-            yield pickle.Unpickler(StringIO(self.connection.get(item))).load()
+            _item = self.connection.get(item)
+            if _item:
+                yield pickle.Unpickler(StringIO(_item)).load()
 
 
 class GraphiteSink(Sink):
