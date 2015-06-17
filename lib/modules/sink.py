@@ -63,19 +63,17 @@ class RedisSink(Sink):
                 self.redis_pipeline.execute()
 
     def read_keys(self, pattern):
-        for item in self.connection.scan_iter(match=pattern):
-            yield item
+        # Note: was switced from SCAN since fetch times were incredibly slow.
+        # It is okay to block redis in this case.
+        return self.connection.keys(pattern)
+
+    def read(self, pattern):
+        for item in self.connection.keys(pattern):
+            yield pickle.Unpickler(StringIO(self.connection.get(item))).load()
 
     def iread(self, pattern):
         for item in self.connection.scan_iter(match=pattern):
             yield pickle.Unpickler(StringIO(self.connection.get(item))).load()
-
-    def read(self, pattern):
-        val = self.connection.get(pattern)
-        if val:
-            return pickle.Unpickler(StringIO(val)).load()
-        else:
-            return None
 
 
 class GraphiteSink(Sink):
