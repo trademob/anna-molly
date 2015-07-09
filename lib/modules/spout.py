@@ -78,8 +78,9 @@ class CarbonAsyncTcpSpout(Spout):
         Unpickle and yield recieved payload
         """
         try:
-            bunch = SafeUnpickler.loads(infile)
-            yield bunch
+            if infile:
+                bunch = SafeUnpickler.loads(infile)
+                yield bunch
         except Exception as _e:
             log.error("UnpicklingError: %s" % (str(_e)))
 
@@ -103,7 +104,10 @@ class CarbonAsyncTcpSpout(Spout):
             self.buf = None
         # Compute Size
         size = data[0:4]
-        size = struct.unpack('!I', size)[0]
+        try:
+            size = struct.unpack('!I', size)[0]
+        except struct.error:
+            _data = None
         log.debug("Read Size: %s\t Received Size: %s" % (size, len(data)))
         # All okay. Read == Received. => Pickel in one packet.
         if size == (len(data) - 4):
@@ -118,11 +122,10 @@ class CarbonAsyncTcpSpout(Spout):
         elif size > (len(data) - 4):
             _data = None
             # Buffer Data
-            self.buf = data[size + 4:]
+            self.buf = data
 
         for datapoints in self._unpickle(_data):
             for datapoint in datapoints:
-                print datapoint
                 self.callback(TimeSeriesTuple(datapoint[0],
                                               datapoint[1][0],
                                               datapoint[1][1]))
