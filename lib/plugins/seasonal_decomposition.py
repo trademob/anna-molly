@@ -13,7 +13,7 @@ sys.path.append('../')
 
 from lib.modules.base_task import BaseTask
 from lib.modules.models import RedisGeneric
-from lib.modules.helper import find_step_size, insert_missing_datapoints
+from lib.modules.helper import insert_missing_datapoints
 from lib.modules.models import TimeSeriesTuple
 
 
@@ -82,29 +82,34 @@ class SeasonalDecomposition(BaseTask):
         metric = self.params['metric']
         period_length = self.params['period_length']
         seasons = self.params['seasons']
+        grid_size = self.params['grid_size']
         default = False
-        tdigest_json = self.metric_sink.read(self.tdigest_key)
+        tdigest_json = [i for i in self.metric_sink.read(self.tdigest_key)]
         if tdigest_json:
-            centroids = json.loads(tdigest_json)
+            centroids = json.loads(tdigest_json[0])
             [self.td.add(c[0], c[1]) for c in centroids]
 
         # gather data and assure requirements
-        data = [el for el in self.metric_sink.iread(metric)]
+        data = [el for el in self.metric_sink.read(metric)]
+        data = [el for el in data if el.timestamp % grid_size == 0]
         data = sorted(data, key=lambda tup: tup.timestamp)
-        step_size = find_step_size(data)
-        if not step_size:
-            self.logger.error(
-                'Datapoints have no common time grid or are not enough. Exiting')
+
+        if not data:
+            self.logger.error('%s :: No Datapoints. Exiting' % self.service)
             return None
-        if data[-1].timestamp - int(time()) > 2 * step_size:
-            self.logger.error('Datapoints are too old (%d sec). Exiting' % (
-                data[-1].timestamp - int(time())))
+
+        if int(time()) - data[-1].timestamp > 3 * grid_size:
+            self.logger.error('%s :: Datapoints are too old (%d sec). Exiting' % (
+                self.service, (int(time()) - data[-1].timestamp)))
             return None
-        data = insert_missing_datapoints(data, default, step_size)
+
+        data = insert_missing_datapoints(data, default, grid_size)
         if len(data) < period_length * seasons:
             self.logger.error(
-                'Not enough (%d) datapoints. Exiting' % len(data))
+                '%s :: Not enough (%d) datapoints. Exiting' % (
+                    self.service, len(data)))
             return None
+
         data = data[-period_length * seasons - 1:-1]
 
         return data
@@ -126,8 +131,8 @@ class SeasonalDecomposition(BaseTask):
                 _error = r_res_ts[:, 2][-1]
                 model = seasonal + trend
             except Exception as e:
-                self.logger.error('STL Call failed: %s. Exiting' % e)
-                return (0.0, 0.0, 0.0, {'flag': -1})
+                self.logger.error('%s :: STL Call failed: %s. Exiting' % (self.service, e))
+                return (0.0, 0.0, 0.0, 0.0, {'flag': -1})
 
             if error_type == 'norm':
                 error = _error / model if model != 0 else -1
@@ -142,19 +147,22 @@ class SeasonalDecomposition(BaseTask):
             self.metric_sink.write(
                 [RedisGeneric(self.tdigest_key, self.td.serialize())])
 
-            return (seasonal, trend, error, state)
+            return (data[-1], seasonal, trend, error, state)
 
         else:
-            return (0.0, 0.0, 0.0, {'flag': -1})
+            return (0.0, 0.0, 0.0, 0.0, {'flag': -1})
 
     def write(self, state):
-        (seasonal, trend, error, state) = state
+        (input_value, seasonal, trend, error, state) = state
         prefix = '%s.%s' % (self.namespace, self.service)
         now = int(time())
         tuples = []
         for name, value in state.iteritems():
             tuples.append(TimeSeriesTuple('%s.%s' % (prefix, name), now, value))
 
+        if not input_value:
+            input_value = 0.0
+        tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'input'), now, input_value))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'seasonal'), now, seasonal))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'trend'), now, trend))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'error'), now, error))

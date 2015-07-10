@@ -26,6 +26,6 @@ class PollSeasonalDecomposition(BaseTask):
             return None
         for service, options in algo_config.iteritems():
             if service and options:
-                option = {'params': options, 'service': service}
-                app.task_runner.delay(SeasonalDecomposition, option)
+                params = {'params': options, 'service': service}
+                app.task_runner.delay(SeasonalDecomposition, params)
         return True
