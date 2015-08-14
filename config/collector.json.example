@@ -11,6 +11,14 @@
             "ttl": 10000
           }
         }
+      ],
+      ".cpu*": [
+        {
+          "RedisIntervalTimeStamped": {
+            "ttl": 1000,
+            "interval": 300
+          }
+        }
       ]
     }
   },

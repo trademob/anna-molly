@@ -27,6 +27,25 @@ class RedisTimeStamped(object):
         return "%s:%d" % (self.datapoint.name, self.datapoint.timestamp)
 
 
+class RedisIntervalTimeStamped(object):
+    """
+    Stores the lastes metric value in the given interval
+    """
+
+    def __init__(self, defaults, datapoint):
+        self.ttl = defaults["ttl"]
+        self.interval = defaults["interval"]
+        self.datapoint = datapoint
+        self.name = self.get_name()
+
+    def __str__(self):
+        return "%s with TTL: %s" % (self.datapoint, self.ttl)
+
+    def get_name(self):
+        timestamp = self.datapoint.timestamp - (self.datapoint.timestamp % self.interval)
+        return "%s:%d" % (self.datapoint.name, timestamp)
+
+
 class RedisGeneric(object):
     def __init__(self, name, datapoint, ttl=None):
         self.datapoint = datapoint
