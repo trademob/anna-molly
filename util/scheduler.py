@@ -10,7 +10,7 @@ from lib.plugins.poll_seasonal_decomposition import PollSeasonalDecomposition
 
 configfile = '/opt/anna-molly/config/analyzer.json'
 CONFIG = config.load(configfile)
-BROKER_URL = "redis://127.0.0.1:6379/0"
+BROKER_URL = CONFIG['celery']['broker']['host']
 
 CELERYBEAT_SCHEDULE = {
     '1': {
