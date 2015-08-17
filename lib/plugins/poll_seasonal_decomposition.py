@@ -2,6 +2,7 @@
 Poll Script for Seasonal Decomposition
 """
 import sys
+import os
 sys.path.append('../')
 
 from .. import app
@@ -20,7 +21,7 @@ class PollSeasonalDecomposition(BaseTask):
         """
         """
         try:
-            algo_config = config_loader.load('/opt/anna-molly/config/services.json')
+            algo_config = config_loader.load(os.path.join(os.path.dirname(__file__), '../../config/services.json'))
             algo_config = algo_config.get(self.plugin)
         except AttributeError:
             return None

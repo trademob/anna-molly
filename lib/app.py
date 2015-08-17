@@ -1,4 +1,5 @@
 import sys
+import os
 import traceback
 from celery import Celery
 from twitter.common import log
@@ -6,7 +7,7 @@ from twitter.common import log
 sys.path.append('../')
 from modules import config
 
-CONFIG = config.load('/opt/anna-molly/config/analyzer.json')
+CONFIG = config.load(os.path.join(os.path.dirname(__file__), '../config/analyzer.json'))
 
 app = Celery('anna-molly', broker=CONFIG['celery']['broker']['host'])
 app.conf.update(
