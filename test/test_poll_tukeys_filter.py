@@ -2,13 +2,12 @@ import sys
 import unittest
 
 from mock import Mock
-from sure import expect
 
 sys.path.append("../")
 
 from fixtures.config import CONFIG
 
-import lib
+import lib.modules
 lib.modules.config = Mock()
 lib.modules.config.load.return_value = CONFIG
 
