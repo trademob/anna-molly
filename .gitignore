@@ -8,3 +8,5 @@ dist
 *.egg-info
 docs/build/
 .vagrant
+config/**
+!config/*.example.json

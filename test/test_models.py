@@ -1,8 +1,6 @@
 import sys
 import unittest
 
-import sure
-
 sys.path.append('../')
 from lib.modules import models
 

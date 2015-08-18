@@ -21,8 +21,12 @@ CONFIG = None
 WHITELIST = None
 BLACKLIST = None
 
-
 def setup(options):
+    """Load the config file and add listeners for whitelisted metrics.
+
+       :param options: app options
+    """
+    global WHITELIST, BLACKLIST
     CONFIG = config.load(options.config)
     WHITELIST = CONFIG['router']['whitelist']
     log.debug("Whitelist: %s" % (WHITELIST))
@@ -35,15 +39,18 @@ def setup(options):
                 EE.add_listener(pattern, handler, count=-1)
     return CONFIG
 
-
-def reject(metric):
-    for pattern in BLACKLIST:
-        if re.match(pattern, metric.name):
-            continue
-    yield metric
-
-
 def process(writer, metric):
+    """Called for each metric from the listener, rejects all blacklisted metrics and sends transformed data to
+       the writer.
+
+       :param writer: The sink where metrics should be written to
+       :param metric: TimeSeriesTuple from the listener
+    """
+    # reject blacklisted metrics
+    for pattern in BLACKLIST:
+        if pattern.search(metric.name):
+            return
+    # send whitelisted metrics to the writer
     for m in EE.emit(metric.name, {"datapoint": metric}):
         writer.write([m])
 

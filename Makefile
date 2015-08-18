@@ -1,16 +1,12 @@
 #!/usr/bin/env make
 
-HOME = ./
-NAME = anna-molly
-TEST = ./test/
-
-.PHONY:clean test docs
-
 init:
 	pip install -r requirements.txt
 
 clean:
-	-rm $(HOME)*.pyc
+	find . -type f -name '*.pyc' -delete
 
 test:
-	make -C $(TEST)
+	python -m unittest discover --verbose
+
+.PHONY: test
