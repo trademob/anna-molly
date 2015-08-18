@@ -5,8 +5,6 @@ import sys
 import itertools
 from time import time
 
-sys.path.append('../')
-
 from lib.modules.base_task import BaseTask
 from lib.modules.helper import extract_service_name, get_closest_datapoint
 from lib.modules.models import TimeSeriesTuple

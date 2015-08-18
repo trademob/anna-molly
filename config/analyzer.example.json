@@ -19,7 +19,6 @@
     "GraphiteSink": {
       "host": "storage.metrics.foo.com",
       "port": 2003,
-      "url": "graphite.foo.com",
       "prefix": "FooBar"
     }
   }

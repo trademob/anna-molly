@@ -10,3 +10,5 @@ docs/build/
 .vagrant
 config/**
 !config/*.example.json
+celerybeat-schedule
+celerybeat.pid

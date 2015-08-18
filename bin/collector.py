@@ -1,9 +1,12 @@
 import re
 import sys
+import os.path
 from functools import partial
 
 from twitter.common import app, log
-sys.path.append("../")
+
+ROOT = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(ROOT)
 
 from lib.modules import spout, config, models, event_emitter_2
 from lib.modules import sink

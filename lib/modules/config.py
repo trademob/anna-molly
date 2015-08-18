@@ -1,6 +1,6 @@
 import yaml
 
-# JSON load yeilds strings in Unicode
+# JSON load yields strings in Unicode
 # use YAML parser instead.
 
 
