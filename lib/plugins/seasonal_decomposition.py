@@ -9,8 +9,6 @@ from numpy import median, asarray
 from time import time
 from tdigest import TDigest
 
-sys.path.append('../')
-
 from lib.modules.base_task import BaseTask
 from lib.modules.models import RedisGeneric
 from lib.modules.helper import insert_missing_datapoints

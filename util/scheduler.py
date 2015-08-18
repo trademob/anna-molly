@@ -1,8 +1,9 @@
 import sys
-import os
+import os.path
 from datetime import timedelta
 
-sys.path.append('../')
+ROOT = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(ROOT)
 
 from lib.modules import config
 from lib.plugins.poll_tukeys_filter import PollTukeysFilter

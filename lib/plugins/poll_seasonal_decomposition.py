@@ -3,9 +3,8 @@ Poll Script for Seasonal Decomposition
 """
 import sys
 import os
-sys.path.append('../')
 
-from .. import app
+from lib import app
 from lib.modules.base_task import BaseTask
 from lib.modules import config as config_loader
 from seasonal_decomposition import SeasonalDecomposition

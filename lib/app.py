@@ -1,10 +1,9 @@
 import sys
-import os
+import os.path
 import traceback
 from celery import Celery
 from twitter.common import log
 
-sys.path.append('../')
 from modules import config
 
 CONFIG = config.load(os.path.join(os.path.dirname(__file__), '../config/analyzer.json'))
