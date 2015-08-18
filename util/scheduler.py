@@ -15,7 +15,7 @@ BROKER_URL = CONFIG['celery']['broker']['host']
 
 CELERYBEAT_SCHEDULE = {
     '1': {
-        'task': 'app.task_runner',
+        'task': 'lib.app.task_runner',
         'schedule': timedelta(seconds=30),
         'args': (PollTukeysFilter, {})
     }

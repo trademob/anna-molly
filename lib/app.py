@@ -12,8 +12,7 @@ CONFIG = config.load(os.path.join(os.path.dirname(__file__), '../config/analyzer
 app = Celery('anna-molly', broker=CONFIG['celery']['broker']['host'])
 app.conf.update(
     CELERY_IMPORTS=('celery.task.http'),
-    CELERY_RESULT_BACKEND = 'redis',
-    CELERY_RESULT_DBURI = CONFIG['celery']['backend']['host'],
+    CELERY_RESULT_BACKEND = CONFIG['celery']['backend']['host'],
     CELERY_RESULT_PERSISTENT = True,
     CELERY_TASK_RESULT_EXPIRES = None
 )
