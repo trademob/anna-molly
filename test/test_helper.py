@@ -1,16 +1,10 @@
-import sys
-import unittest
-
-sys.path.append("../")
-
 from sure import expect
 
 from lib.modules.helper import extract_service_name, get_closest_datapoint, find_step_size, insert_missing_datapoints
 from lib.modules.models import TimeSeriesTuple
 
 
-class TestHelperMethods(unittest.TestCase):
-
+class TestHelperMethods(object):
     def setUp(self):
         self.timeseries = [TimeSeriesTuple('_', 10, 1),
                            TimeSeriesTuple('_', 20, 1),

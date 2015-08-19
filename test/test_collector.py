@@ -1,34 +1,24 @@
 import sys
-import unittest
 import os.path
 
 from mock import Mock
 
 ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(ROOT_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'bin')) # add bin dir to stub collector internals
 
 import collector
 from lib.modules.models import TimeSeriesTuple
 
-collector.config = Mock()
-collector.config.load.return_value = {
-    'router': {
-        'blacklist': ['.*_crit.*'],
-        'whitelist': {
-            'host.ip.*serv1.*cpu.*': [{
-              'RedisTimeStamped': { 'ttl': 10 }
-}]}}}
 
-# setup the collector once
-options = Mock()
-collector.setup(options)
+class TestCollector(object):
 
-class TestCollector(unittest.TestCase):
+    @classmethod
+    def setUpAll(cls):
+        options = Mock(**{'config': './collector.json'})
+        collector.setup(options)
 
     def setUp(self):
         self.writer = Mock()
-        self.listener = Mock()
 
     # process
 

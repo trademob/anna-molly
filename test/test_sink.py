@@ -1,22 +1,17 @@
 import redis
-import sys
-import unittest
 import cPickle as pickle
-
-sys.path.append("../")
 
 from mock import Mock
 from sure import expect
 
-from fixtures.config import CONFIG
+from fixtures.config import sink as sink_config
 from lib.modules.models import TimeSeriesTuple, RedisTimeStamped
 from lib.modules import sink
 
 
 class TestInterface(object):
 
-    class TestSinkInterface(unittest.TestCase):
-
+    class TestSinkInterface(object):
         def setUp(self):
             self.my_sink = sink.Sink()
 
@@ -35,10 +30,9 @@ class TestInterface(object):
 
 
 class TestRedisSinkInterface(TestInterface.TestSinkInterface):
-
     def setUp(self):
         sink.redis = Mock()
-        self.configuration = CONFIG["SINK"]["RedisSink"]
+        self.configuration = sink_config['RedisSink']
         self.my_sink = sink.RedisSink(self.configuration)
         self.redis_pipeline_list = []
 
@@ -67,10 +61,10 @@ class TestRedisSinkInterface(TestInterface.TestSinkInterface):
         data_tuple = TimeSeriesTuple('service', 60, 1.0)
         for nr_elements_to_insert in [0, 20]:
             redis_value = [
-                RedisTimeStamped({"ttl": 60}, data_tuple)] * nr_elements_to_insert
+                RedisTimeStamped({'ttl': 60}, data_tuple)] * nr_elements_to_insert
             self.my_sink.write(redis_value)
-            expected_pipeline = [("service:60", 60, (pickle.dumps(TimeSeriesTuple(
-                'service', 60, 1.0))))] * (nr_elements_to_insert % self.configuration["pipeline_size"])
+            expected_pipeline = [('service:60', 60, (pickle.dumps(TimeSeriesTuple(
+                'service', 60, 1.0))))] * (nr_elements_to_insert % self.configuration['pipeline_size'])
             expect(self.redis_pipeline_list).to.equal(expected_pipeline)
 
     def test_sink_read_keys(self):
@@ -88,7 +82,7 @@ class TestRedisSinkInterface(TestInterface.TestSinkInterface):
         for i in range(1, 7):
             service_name = 'service%s' % (i)
             data[service_name] = RedisTimeStamped(
-                {"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+                {'ttl': 120}, TimeSeriesTuple(service_name, 60, 1.0))
 
         data['service4'] = None
 
@@ -112,7 +106,7 @@ class TestRedisSinkInterface(TestInterface.TestSinkInterface):
         for i in range(1, 7):
             service_name = 'service%s' % (i)
             data[service_name] = RedisTimeStamped(
-                {"ttl": 120}, TimeSeriesTuple(service_name, 60, 1.0))
+                {'ttl': 120}, TimeSeriesTuple(service_name, 60, 1.0))
 
         data['service4'] = None
 

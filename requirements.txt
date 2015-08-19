@@ -24,3 +24,4 @@ twitter.common.process==0.3.3
 twitter.common.string==0.3.3
 twitter.common.util==0.3.3
 ujson==1.33
+nose ~= 1.3

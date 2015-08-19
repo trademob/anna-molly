@@ -1,21 +1,17 @@
 # TODO: Async TCP Spout Tests
 import pickle
-import sys
-import unittest
-
-sys.path.append("../")
+from struct import pack
 
 from mock import Mock
-from struct import pack
 from sure import expect
 
-from fixtures.config import CONFIG
+from fixtures.config import spout as spout_config
 from lib.modules import spout
 
 
 class TestInterface(object):
 
-    class TestSpoutInterface(unittest.TestCase):
+    class TestSpoutInterface(object):
 
         def setUp(self):
             self.my_spout = spout.Spout()
@@ -57,7 +53,7 @@ class TestInterface(object):
 
 #     def setUp(self):
 #         spout.socket.socket.accept = Mock(return_value=(Mock(), None))
-#         configuration = CONFIG["SPOUT"]["CarbonTcpSpout"]
+#         configuration = spout_config["CarbonTcpSpout"]
 #         self.my_spout = spout.CarbonTcpSpout(configuration)
 #         self.my_spout.connection = Mock()
 #         self.my_spout.connection.recv = self.stub_recv
