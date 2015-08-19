@@ -1,27 +1,41 @@
 {
   "TukeysFilter": {
-    "service1": {
-      "quantile_25": "service.quartil_25",
-      "quantile_75": "service.quartil_75",
-      "iqr_scaling": 2,
-      "metrics": "system.*",
-      "default": 0,
-      "offset": 60,
-      "maximum_delay": 900
+    "scheduler_options": {
+      "interval_secs": 30,
+      "plugin": "PollTukeysFilter",
+      "plugin_args": {}
+    },
+    "worker_options": {
+      "service1": {
+        "quantile_25": "service.quartil_25",
+        "quantile_75": "service.quartil_75",
+        "iqr_scaling": 2,
+        "metrics": "system.*",
+        "default": 0,
+        "offset": 60,
+        "maximum_delay": 900
+      }
     }
   },
   "SeasonalDecomposition": {
-    "stl_service1": {
-      "metric": "system.loadavg",
-      "period_length": 6,
-      "seasons": 2,
-      "error_type": "norm",
-      "default": 0,
-      "error_handling": "tukey",
-      "error_params": {
-        "scaling": 2,
-        "min_th_up": 0.1,
-        "min_th_low": -0.1,
+    "scheduler_options": {
+      "interval_secs": 30,
+      "plugin": "PollSeasonalDecomposition",
+      "plugin_args": {}
+    },
+    "worker_options": {
+      "stl_service1": {
+        "metric": "system.loadavg",
+        "period_length": 6,
+        "seasons": 2,
+        "error_type": "norm",
+        "default": 0,
+        "error_handling": "tukey",
+        "error_params": {
+          "scaling": 2,
+          "min_th_up": 0.1,
+          "min_th_low": -0.1,
+        }
       }
     }
   }

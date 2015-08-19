@@ -1,144 +1,141 @@
 # What is Anna-Molly? ![](https://travis-ci.org/trademob/anna-molly.svg?branch=master)
 
-Anna-Molly is a scalable system to collect metric data for dynamic monitoring. 
+Anna-Molly is a scalable system to collect metric data for dynamic monitoring.
 
 * It can:
-
-  - Recieve metrics from Carbon and store the relevent metrics.   
-  - Analyze them with one of the available plugin algorithms.   
-  - Push the analysis to graphite.   
-  - Trigger Events based on the results of the algorithm.   
+    - Receive metrics from Carbon and store the relevant metrics.
+    - Analyze them with one of the available plugin algorithms.
+    - Push the analysis to graphite.
+    - Trigger Events based on the results of the algorithm.
 
 
 Anna-Molly has two components:
-    1. Collector  
-    2. Task Runner  
 
+1. **Collector**
+    * The collector is responsible for receiving the Metrics from a Spout (Metric-Source) and pushing it to a Sink.
+2. **Task Runner**
+    * The Task-Runner is a celery encapsulated task, that invokes algorithm plugins that then work with
+      the data from the Sink. The plugins can be algorithms, supporting tasks, event handlers or others.
 
-* The collector is responsible for receiving the Metrics from a Spout (Metric-Source) and pushing it to a Sink.
-
-* The Task-Runner is a celery encapsulated task, that invokes algorithm plugins that then work with the data from the Sink. The plugins can be algorithms, supporting tasks, event handlers or others.
-
-
-**A word of Caution:**
-  This is a work in progress. There are a number of moving parts in Anna-Molly. which makes configuration and setup slightly tricky. You can follow the setup guide below. In case you run into issues in setting it up, write to us.
+> **A word of Caution:** This is a work in progress. There are a number of moving parts in Anna-Molly.
+> which makes configuration and setup slightly tricky. You can follow the setup guide below. In case you
+> run into issues in setting it up, write to us.
 
 
 # What do I need?
+
 Python (2.6, 2.7)
 
-##Dependencies
+## Dependencies
 
-  `sudo apt-get install -y build-essential python-pip r-base python-celery redis-server automake`
-
-  `sudo pip install -r /opt/anna-molly/requirements.txt`
-
+```bash
+sudo apt-get install -y build-essential python-pip r-base redis-server \
+                        automake
+sudo pip install -r /opt/anna-molly/requirements.txt
+```
 
 
 # Getting Started.
 
 ## First Steps
 
-**Assumption:**
-  You have a carbon relaying pickled metrics to a destination host:port.
+**Assumption:** You have a carbon relaying pickled metrics to a destination *(host:port)*.
 
-- Bring up the Vagrant Box   
-`vagrant up`   
+### Bring up the Vagrant Box
 
-- Configure a `collector.json` at `/opt/anna-molly/config`   
-You can use the `/opt/anna-molly/config/collector.json.example` as a template.   
-Instructions on setting-up the collector config can be found in the sections below.   
+* `vagrant up`
 
-- Start the Collector   
-`python /opt/anna-molly/bin/collector.py --config /opt/anna-molly/config/collector.json`   
+### Setup the Collector
 
-We should now have metrics being pushed to RedisSink.   
-Verify this issuing `redis-cli -p 6379 monitor`
+* Configure a `collector.json` at `/opt/anna-molly/config`. You can use the
+  `/opt/anna-molly/config/collector.json.example` as a template. Instructions on setting-up the collector config
+  can be found in the sections below.
+* Start the Collector `python /opt/anna-molly/bin/collector.py --config /opt/anna-molly/config/collector.json`
+
+We should now have metrics being pushed to RedisSink. Verify this issuing `redis-cli -p 6379 monitor`
 
 ### Setup Task-Runner/Celery
 
-Configure a `analyzer.json` at `/opt/anna-molly/config`   
-You can use the `/opt/anna-molly/config/analyzer.json.example` as a template.   
-Instructions on setting-up the analyzer config can be found in the sections below.   
-
-* Start Task-Runner/Celery   
-  `celery -A lib.app worker -l info` from `/opt/anna-molly`   
-
-* Start Scheduler   
-  `celery --beat --config=scheduler` from `/opt/anna-molly/util`   
+* Configure a `analyzer.json` at `/opt/anna-molly/config`. You can use the
+  `/opt/anna-molly/config/analyzer.json.example` as a template. Instructions on setting-up the analyzer config
+  can be found in the sections below.
+* Start Task-Runner/Celery `celery -A lib.app worker -l info` from `/opt/anna-molly`
+* Start Scheduler `celery --beat --config=scheduler --workdir=./bin` from `/opt/anna-molly`
 
 
 # Terminology
 
 ## Spout
 
-Metric data source. It is exclusively used by the Collector Daemon to receive the data and push it to the Sink.   
+Metric data source. It is exclusively used by the Collector Daemon to receive the data and push it to the Sink.
 
-### Implementations:
+### Implementations
 
-  1. Carbon Asynchronous TCP Pickle Spout
+1. **CarbonAsyncTcpSpout** - Carbon Asynchronous TCP Pickle Spout
 
 ## Sink
 
 A duplex interface to read and write data.
-- Collector writes the data to the sink.      
-- Tasks read data from the sink.   
-- Tasks can also write to sink.   
+- Collector writes the data to the sink.
+- Tasks read data from the sink.
+- Tasks can also write to sink.
 
-### Implementations:
+### Implementations
 
-  1. RedisSink   
-  2. GraphiteSink (Write Only)   
+1. **RedisSink**
+2. **GraphiteSink** (Write Only)
 
 ## Models
 
-Class definitions that dicate how Time Series data is stored in the Sink or used by the tasks.
+Class definitions that dictate how Time Series data is stored in the Sink or used by the tasks.
 
-`TimeSeriesTuple`
-For simplicity, data is stored and processed around as TimeSeriesTuple. 
+### Implementations
 
+1. **TimeSeriesTuple** - For simplicity, data is stored and processed around as TimeSeriesTuple.
+2. **RedisTimeStamped**
+3. **RedisIntervalTimeStamped**
+4. **RedisGeneric**
 
 ## Base Task
 
-Base Task module is an abstract class that all plugins inherit from. It can setup the necessary resources/connections for the plugin and exposes a `run` method which is implemented by the plugins.  
-   
+Base Task module is an abstract class that all plugins inherit from. It can setup the necessary
+resources/connections for the plugin and exposes a `run` method which is implemented by the plugins.
 
 ## Collector Daemon
 
-Collector Daemon receives data from a Spout and pushes it to a Sink.   
-Metrics of interest can be configured in `config/collector.json`. See configuration section below for details.   
+Collector Daemon receives data from a Spout and pushes it to a Sink. Metrics of interest can be
+configured in `config/collector.json`. See configuration section below for details.
 
-* Collector uses Spouts to listen/receive data.   
-* The data received if in whitelist is then instanciated to the configured model and pushed into the Sink.   
-
+* Collector uses Spouts to listen/receive data.
+* The data received if in whitelist is then instantiated to the configured model and pushed into the Sink.
 
 ## Task Runner
 
-The task runner is an encapsulated Celery Task.   
-Any Plugin in the `lib/plugins` folder can be invoked by the task-runner as a task.   
-
+The task runner is an encapsulated Celery Task. Any Plugin in the `lib/plugins` folder can be invoked
+by the task-runner as a task.
 
 ### Poll Tasks
 
 Poll tasks are special tasks that are invoked by the scheduler to identify and trigger the actual Algorithm Task.
 
-
 ## Plugins
 
-Plugins inherit from the BaseTask module and are responsible for setting up resources required for the Plugin to run. It also implements the run method which is invoked by the task-runner.   
+Plugins inherit from the BaseTask module and are responsible for setting up resources required for the Plugin to
+run. It also implements the run method which is invoked by the task-runner.
 
 
 # Configuration
 
 There are three configuration files:
-1. collector.json: Used by the `Collector`.   
-2. analyzer.json: Used by `Celery/BaseTask`.   
-3. services.json: Used by Plugins for algorithm specific configuration (see [wiki](https://github.com/trademob/anna-molly/wiki))   
+
+1. collector.json: Used by the `Collector`.
+2. analyzer.json: Used by `Celery/BaseTask`.
+3. services.json: Used by Plugins for algorithm specific configuration (see [wiki](https://github.com/trademob/anna-molly/wiki))
 
 Note: The configuration needs to be simplified and will be worked on shortly.
 
 ## collector.json
-### Router
+
 ```json
 {
   "router": {
@@ -155,20 +152,7 @@ Note: The configuration needs to be simplified and will be worked on shortly.
         }
       ]
     }
-  }
-}
-```
-Config for routing/modeling the metrics. 
-- Blacklist (Array)
-Metrics blacklisted are rejected.
-- Whitelist (Object)
-Metrics that match a whitelist are instantiated in the models specified in the config. Other metrics are ignored.
-
-Metrics that have N models configured, will have N objects stored in the Sink.
-
-### Writer
-```json
-{
+  },
   "writer": {
     "RedisSink": {
       "host": "127.0.0.1",
@@ -176,14 +160,7 @@ Metrics that have N models configured, will have N objects stored in the Sink.
       "db": 3,
       "pipeline_size": 50
     }
-  }
-}
-```
-Needs Sink 
-
-### Listener
-```json
-{
+  },
   "listener": {
     "CarbonAsyncTcpSpout": {
       "host": "0.0.0.0",
@@ -192,11 +169,24 @@ Needs Sink
   }
 }
 ```
-Needs Spout and Spout configuration.
+
+### Router
+
+Config for routing/modeling the metrics.
+
+  - Blacklist (Array) - Metrics matching one of the blacklist are rejected.
+  - Whitelist (Object) - Metrics that match a whitelist are instantiated as the model specified in the config.
+    Other metrics are ignored. Metrics that have N models configured, will have N objects stored in the Sink.
+
+### Writer
+
+Needs Sink
+
+### Listener
+
+Needs Spout
 
 ## analyzer.json
-
-Celery
 
 ```json
 {
@@ -208,30 +198,13 @@ Celery
       "host": "redis://127.0.0.1:6379/2"
     },
     "time_limit": "120"
-  }
-}
-```
-
-Basic Celery configuration. Can be used with a broker/backend of your choice. Refer Celery Docs for more information.
-
-MetricSink
-
-```json
-{
+  },
   "metric_sink": {
     "RedisSink": {
       "host": "127.0.0.1",
       "port": 6379
     }
-  }
-}
-```
-
-MetricSink is input the Sink from which the plugins will fetch the Metric data for analysis. It must provide configuration specific to the Sink implementation.
-
-OutputSink
-```json
-{
+  },
   "output_sink": {
     "GraphiteSink": {
       "host": "storage.metrics.foo.com",
@@ -241,7 +214,46 @@ OutputSink
   }
 }
 ```
-The plugins push the result data into the OutputSink.
+
+### Celery
+
+Basic Celery configuration. Can be used with a broker/backend of your choice. Refer Celery Docs for more information.
+
+### MetricSink
+
+Sink configuration. This is the input from which the plugins will fetch the Metric data for analysis. It must provide
+configuration specific to the Sink implementation.
+
+### OutputSink
+
+Plugins push the result data into the OutputSink.
+
+## services.json
+
+```json
+{
+  "TukeysFilter": {
+    "scheduler_options": {
+      "interval_secs": 30,
+      "plugin": "PollTukeysFilter",
+      "plugin_args": {}
+    },
+    "worker_options": {
+      "service1": {}
+    }
+  }
+}
+```
+
+### Algorithm Configuration
+
+Each key in the `services.json` file defines an algorithm that will run (here `TukeysFilter`).
+
+- **scheduler_options** - celery config
+    - **interval_secs** - how often the tasks should run
+    - **plugin** - the Poll Task to start, which places tasks for the Task Runner
+    - **plugin_args** - arguments for the Poll Task
+- **worker_options** - options for the each Task Runner
 
 ## Algorithms
 
