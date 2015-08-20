@@ -3,12 +3,12 @@ Seasonal Decomposition Class
 """
 import json
 import rpy2.robjects as robjects
-import sys
 
-from numpy import median, asarray
+from numpy import asarray
 from time import time
-from tdigest import TDigest
+from tdigest.merge_digest import MergeDigest
 
+from lib.modules.helper import eval_tukey, eval_quantile
 from lib.modules.base_task import BaseTask
 from lib.modules.models import RedisGeneric
 from lib.modules.helper import insert_missing_datapoints
@@ -23,86 +23,41 @@ class SeasonalDecomposition(BaseTask):
         self.namespace = 'SeasonalDecomposition'
         self.service = options['service']
         self.params = options['params']
-        self.tdigest_key = 'td:%s' % self.service
-        self.td = TDigest()
+        self.tdigest_key = 'md:%s' % self.service
+        self.tdigest = MergeDigest()
         self.error_eval = {
-            'tukey': self._eval_tukey,
-            'quantile': self._eval_quantile
+            'tukey': eval_tukey,
+            'quantile': eval_quantile
         }
 
-    def _eval_quantile(self, error):
-        state = {}
-        alpha = self.params['error_params']['alpha']
-        lower = self.td.quantile(alpha / 2)
-        upper = self.td.quantile(1 - alpha / 2)
-        if 'minimal_lower_threshold' in self.params['error_params']:
-            lower = max(
-                lower, self.params['error_params']['minimal_lower_threshold'])
-        if 'minimal_upper_threshold' in self.params['error_params']:
-            upper = min(
-                upper, self.params['error_params']['minimal_upper_threshold'])
-        flag = 0
-        if error > upper:
-            flag = 1
-        elif error < lower:
-            flag = -1
-        state['flag'] = flag
-        state['lower'] = lower
-        state['upper'] = upper
-        state['alpha'] = alpha
-        return state
-
-    def _eval_tukey(self, error):
-        state = {}
-        iqr_scaling = self.params['error_params'].get('iqr_scaling', 1.5)
-        quantile_25 = self.td.quantile(0.25)
-        quantile_75 = self.td.quantile(0.75)
-        iqr = quantile_75 - quantile_25
-        lower = quantile_25 - iqr_scaling * iqr
-        upper = quantile_75 + iqr_scaling * iqr
-        if 'minimal_lower_threshold' in self.params['error_params']:
-            lower = max(
-                lower, self.params['error_params']['minimal_lower_threshold'])
-        if 'minimal_upper_threshold' in self.params['error_params']:
-            upper = min(
-                upper, self.params['error_params']['minimal_upper_threshold'])
-        flag = 0
-        if error > upper:
-            flag = 1
-        elif error < lower:
-            flag = -1
-        state['flag'] = flag
-        state['lower'] = lower
-        state['upper'] = upper
-        return state
+    def _read_tdigest(self):
+        tdigest_json = [i for i in self.metric_sink.read(self.tdigest_key)]
+        if tdigest_json:
+            centroids = json.loads(tdigest_json[0])
+            [self.tdigest.add(c[0], c[1]) for c in centroids]
 
     def read(self):
         metric = self.params['metric']
         period_length = self.params['period_length']
         seasons = self.params['seasons']
-        grid_size = self.params['grid_size']
-        default = False
-        tdigest_json = [i for i in self.metric_sink.read(self.tdigest_key)]
-        if tdigest_json:
-            centroids = json.loads(tdigest_json[0])
-            [self.td.add(c[0], c[1]) for c in centroids]
+        interval = self.params['interval']
 
         # gather data and assure requirements
-        data = [el for el in self.metric_sink.read(metric)]
-        data = [el for el in data if el.timestamp % grid_size == 0]
-        data = sorted(data, key=lambda tup: tup.timestamp)
+        self._read_tdigest()
 
-        if not data:
+        data = [el for el in self.metric_sink.read(metric)]
+        if not data[0]:
             self.logger.error('%s :: No Datapoints. Exiting' % self.service)
             return None
 
-        if int(time()) - data[-1].timestamp > 3 * grid_size:
+        data = sorted(data, key=lambda tup: tup.timestamp)
+        if int(time()) - data[-1].timestamp > 3 * interval:
             self.logger.error('%s :: Datapoints are too old (%d sec). Exiting' % (
                 self.service, (int(time()) - data[-1].timestamp)))
             return None
 
-        data = insert_missing_datapoints(data, default, grid_size)
-        if len(data) < period_length * seasons:
+        data = insert_missing_datapoints(data, False, interval)
+        if len(data) < period_length * seasons + 1:
             self.logger.error(
                 '%s :: Not enough (%d) datapoints. Exiting' % (
                     self.service, len(data)))
@@ -113,11 +68,13 @@ class SeasonalDecomposition(BaseTask):
         return data
 
     def process(self, data):
+        error_params = self.params.get('error_params', {})
         if data:
             period_length = self.params['period_length']
-            error_type = self.params.get('error_type', 'norm')
+            error_type = error_params.get('error_type', 'norm')
+            error_handling = error_params.get('error_handling', 'tukey')
             data = [float(el.value) if el.value else False for el in data]
-
+            input_val = data[-1]
             try:
                 r_stl = robjects.r.stl
                 r_ts = robjects.r.ts
@@ -126,32 +83,40 @@ class SeasonalDecomposition(BaseTask):
                 r_res_ts = asarray(r_res[0])
                 seasonal = r_res_ts[:, 0][-1]
                 trend = r_res_ts[:, 1][-1]
-                _error = r_res_ts[:, 2][-1]
+                # _error = r_res_ts[:, 2][-1]
+                # due to outtages the trend component can be decreased and
+                # and therefore negative model values are possible
                 model = seasonal + trend
+                model = max(0.01, model)
+                _error = input_val - model
             except Exception as e:
                 self.logger.error('%s :: STL Call failed: %s. Exiting' % (self.service, e))
-                return (0.0, 0.0, 0.0, 0.0, {'flag': -1})
+                return (0.0, 0.0, 0.0, 0.0, 0.0, {'flag': -1})
+
+            # normalize error
+            if _error <= 0:
+                error_norm = _error / model
+            else:
+                error_norm = _error / input_val
 
             if error_type == 'norm':
-                error = _error / model if model != 0 else -1
-            elif error_type == 'median':
-                error = data[-1] - seasonal - median(data)
+                error = error_norm
             elif error_type == 'stl':
                 error = _error
 
             # add error to distribution and evaluate
-            self.td.add(error, 1.0)
-            state = self.error_eval[self.params['error_handling']](error)
+            self.tdigest.add(error, 1.0)
+            state = self.error_eval[error_handling](error, error_params, self.tdigest)
             self.metric_sink.write(
-                [RedisGeneric(self.tdigest_key, self.td.serialize())])
+                [RedisGeneric(self.tdigest_key, self.tdigest.serialize())])
 
-            return (data[-1], seasonal, trend, error, state)
+            return (input_val, model, seasonal, trend, error, state)
 
         else:
-            return (0.0, 0.0, 0.0, 0.0, {'flag': -1})
+            return (0.0, 0.0, 0.0, 0.0, 0.0, {'flag': -1})
 
     def write(self, state):
-        (input_value, seasonal, trend, error, state) = state
+        (input_value, model, seasonal, trend, error, state) = state
         prefix = '%s.%s' % (self.namespace, self.service)
         now = int(time())
         tuples = []
@@ -160,6 +125,7 @@ class SeasonalDecomposition(BaseTask):
 
         if not input_value:
             input_value = 0.0
+        tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'model'), now, model))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'input'), now, input_value))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'seasonal'), now, seasonal))
         tuples.append(TimeSeriesTuple('%s.%s' % (prefix, 'trend'), now, trend))
