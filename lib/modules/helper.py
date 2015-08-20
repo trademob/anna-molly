@@ -3,6 +3,7 @@ import cPickle as pickle
 import sys
 
 from cStringIO import StringIO
+from math import exp
 
 from models import TimeSeriesTuple
 
@@ -72,3 +73,45 @@ def insert_missing_datapoints(timeseries, default, step_size):
         filled_timeseries.append(datapoint)
         last = datapoint.timestamp
     return filled_timeseries
+
+
+def eval_tukey(error, params, tdigest):
+    state = {}
+    iqr_scaling = params.get('iqr_scaling', 1.5)
+    quantile_25 = tdigest.quantile(0.25)
+    quantile_75 = tdigest.quantile(0.75)
+    iqr = quantile_75 - quantile_25
+    lower = quantile_25 - iqr_scaling * iqr
+    upper = quantile_75 + iqr_scaling * iqr
+    # get minimal thresholds if set
+    min_lower = params.get('minimal_lower_threshold', exp(50))
+    min_upper = params.get('minimal_upper_threshold', -exp(50))
+    flag = 0
+    if error > upper and error > min_upper:
+        flag = 1
+    elif error < lower and error < min_lower:
+        flag = -1
+    state['flag'] = flag
+    state['lower'] = lower
+    state['upper'] = upper
+    return state
+
+
+def eval_quantile(error, params, tdigest):
+    state = {}
+    alpha = params.get('alpha', 0.01)
+    lower = tdigest.quantile(alpha / 2)
+    upper = tdigest.quantile(1 - alpha / 2)
+    # get minimal thresholds if set
+    min_lower = params.get('minimal_lower_threshold', exp(50))
+    min_upper = params.get('minimal_upper_threshold', -exp(50))
+    flag = 0
+    if error > upper and error > min_upper:
+        flag = 1
+    elif error < lower and error < min_lower:
+        flag = -1
+    state['flag'] = flag
+    state['lower'] = lower
+    state['upper'] = upper
+    state['alpha'] = alpha
+    return state
