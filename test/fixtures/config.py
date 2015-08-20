@@ -65,10 +65,45 @@ services = {
         },
         'worker_options': {
             'stl_service1': {
-                'metric': 'system.loadavg'
+                'metric': 'cpu',
+                'period_length': 3,
+                'seasons': 2,
+                'interval': 1,
+                'error_params': {}
             }
         }
-    }
+    },
+    'SeasonalDecompositionEnsemble': {
+        'scheduler_options': {
+            'interval_secs': 180,
+            'plugin': 'PollSeasonalDecompositionEnsemble',
+            'plugin_args': {}
+        },
+        'worker_options': {
+            'stle_service1': {
+                'metric': 'cpu',
+                'period_length': 3,
+                'seasons': 2,
+                'interval': 1,
+                'error_params': {}
+            }
+        }
+    },
+    'FlowDifference': {
+        'scheduler_options': {
+            'interval_secs': 600,
+            'plugin': 'PollFlowDifference',
+            'plugin_args': {}
+        },
+        'worker_options': {
+            'flow_service1': {
+                'in_metric': 'service1.out',
+                'out_metric': 'service2.in',
+                'stale': 10,
+                'error_params': {}
+            }
+        }
+    },
 }
 
 collector = {
@@ -76,7 +111,7 @@ collector = {
         'blacklist': ['.*_crit.*'],
         'whitelist': {
             'host.ip.*serv1.*cpu.*': [{
-              'RedisTimeStamped': { 'ttl': 10 }
+                'RedisTimeStamped': {'ttl': 10}
             }]
         }
     }
