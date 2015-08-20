@@ -10,10 +10,10 @@ from lib.modules.base_task import BaseTask
 
 
 class PollTask(BaseTask):
-    def __init__(self, plugin_name, config, logger, options):
+    def __init__(self, config, logger, options):
         super(PollTask, self).__init__(config, logger, resource={'metric_sink': 'RedisSink'})
-        self.plugin_name = plugin_name
-        self.plugin = getattr(plugins, plugin_name)
+        self.plugin_name = options['plugin_name']
+        self.plugin = getattr(plugins, self.plugin_name)
 
     def run(self):
         try:

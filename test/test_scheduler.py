@@ -23,21 +23,21 @@ class TestScheduler(object):
             'TukeysFilter': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=60),
-                'args': (PollTask, 'PollTukeysFilter', {})
+                'args': (PollTask, {'plugin_name': 'PollTukeysFilter'})
             },
             'SeasonalDecomposition': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=300),
-                'args': (PollTask, 'PollSeasonalDecomposition', {})
+                'args': (PollTask, {'plugin_name': 'PollSeasonalDecomposition'})
             },
             'SeasonalDecompositionEnsemble': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=180),
-                'args': (PollTask, 'PollSeasonalDecompositionEnsemble', {})
+                'args': (PollTask, {'plugin_name': 'PollSeasonalDecompositionEnsemble'})
             },
             'FlowDifference': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=600),
-                'args': (PollTask, 'PollFlowDifference', {})
+                'args': (PollTask, {'plugin_name': 'PollFlowDifference'})
             }
         })

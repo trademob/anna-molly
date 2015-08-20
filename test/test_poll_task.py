@@ -28,16 +28,15 @@ class TestPollTask(object):
         poll_task.app = self.app
 
     def test_poll_task_should_throw_if_plugin_is_invalid(self):
-        poll_task.PollTask.when.called_with('SomePlugin',
-                                            config=analyzer,
+        poll_task.PollTask.when.called_with(config=analyzer,
                                             logger=None,
                                             options=None
-                                            ).should.throw(AttributeError)
+                                            ).should.throw(Exception)
 
     def test_poll_task_for_each_plugin(self):
             for plugin_name, plugin in PLUGINS.iteritems():
                 poll_task.app = Mock()
-                self.test_poll_task = poll_task.PollTask(plugin_name, config=analyzer, logger=None, options=None)
+                self.test_poll_task = poll_task.PollTask(config=analyzer, logger=None, options={'plugin_name': plugin_name})
                 self.test_poll_task.should.have.property('plugin_name').being.equal(plugin_name)
                 self.test_poll_task.should.have.property('plugin').being.equal(plugin)
                 config = services[plugin_name]['worker_options']
