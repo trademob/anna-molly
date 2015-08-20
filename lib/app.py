@@ -4,7 +4,7 @@ import traceback
 from celery import Celery
 from twitter.common import log
 
-from modules import config
+from lib.modules import config
 
 CONFIG = config.load(os.path.join(os.path.dirname(__file__), '../config/analyzer.json'))
 

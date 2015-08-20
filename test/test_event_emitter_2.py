@@ -1,20 +1,15 @@
 import re
-import sys
-import unittest
 
 from sure import expect
 from boltons.dictutils import OrderedMultiDict as OMD
 
-sys.path.append("../")
-
 from lib.modules.event_emitter_2 import EventEmitter2
-
 
 def echo():
     pass
 
 
-class TestEventEmitter2(unittest.TestCase):
+class TestEventEmitter2(object):
     def setUp(self):
         self.ee = EventEmitter2()
 
@@ -31,17 +26,17 @@ class TestEventEmitter2(unittest.TestCase):
         self.ee.should.have.property('once')
 
     def test_add_listener_should_add_a_listener_with_call_count(self):
-        return_value = self.ee.add_listener("some_reg.X", echo, 100)
+        return_value = self.ee.add_listener('some_reg.X', echo, 100)
         expect(return_value).to.equal(True)
-        event_key = re.compile("some_reg.X")
+        event_key = re.compile('some_reg.X')
         expect(self.ee.events.keys()).to.equal([event_key])
         expect(self.ee.events[event_key]['handler']).to.equal(echo)
         expect(self.ee.events[event_key]['calls']).to.equal(0)
         expect(self.ee.events[event_key]['calls_left']).to.equal(100)
 
     def test_remove_listener_should_detach_event_if_listener_count_is_one(self):
-        self.ee.add_listener("some_reg.X", echo, 100)
-        return_value = self.ee.remove_listener("some_reg.X", echo)
+        self.ee.add_listener('some_reg.X', echo, 100)
+        return_value = self.ee.remove_listener('some_reg.X', echo)
         expect(return_value).to.equal(True)
         expect(self.ee.events).to.be.a(OMD)
         expect(self.ee.events.keys()).to.equal([])

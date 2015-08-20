@@ -1,12 +1,7 @@
-import sys
-import unittest
-
-sys.path.append('../')
 from lib.modules import models
 
 
-class TestModels(unittest.TestCase):
-
+class TestModels(object):
     def setUp(self):
         self.name = 'cpu'
         self.timestamp = 1234
@@ -24,14 +19,14 @@ class TestModels(unittest.TestCase):
         self.tst.value.should.be.a(float)
 
     def test_RedisTimestamped(self):
-        rt = models.RedisTimeStamped({"ttl": self.ttl}, self.tst)
+        rt = models.RedisTimeStamped({'ttl': self.ttl}, self.tst)
         rt.should.have.property('datapoint')
         rt.should.have.property('name').equal('cpu:1234')
         rt.should.have.property('ttl').equal(60)
         rt.datapoint.should.be.a(models.TimeSeriesTuple)
 
     def test_RedisIntervalTimeStamped(self):
-        rt = models.RedisIntervalTimeStamped({"ttl": self.ttl, "interval": self.interval}, self.tst)
+        rt = models.RedisIntervalTimeStamped({'ttl': self.ttl, 'interval': self.interval}, self.tst)
         rt.should.have.property('datapoint')
         rt.should.have.property('name').equal('cpu:1200')
         rt.should.have.property('ttl').equal(60)
