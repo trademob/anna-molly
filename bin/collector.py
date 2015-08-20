@@ -1,3 +1,7 @@
+"""
+The Anna-Molly Collector
+"""
+
 import re
 import sys
 import os.path

@@ -44,15 +44,29 @@ analyzer = {
 
 services = {
     'TukeysFilter': {
-        'service1': {
-            'options': {
-                'quantile_25': 'service.quartil_25'
+        'scheduler_options': {
+            'interval_secs': 60,
+            'plugin': 'PollTukeysFilter',
+            'plugin_args': {}
+        },
+        'worker_options': {
+            'service1': {
+                'options': {
+                    'quantile_25': 'service.quartil_25'
+                }
             }
         }
     },
     'SeasonalDecomposition': {
-        'stl_service1': {
-            'metric': 'system.loadavg'
+        'scheduler_options': {
+            'interval_secs': 300,
+            'plugin': 'PollSeasonalDecomposition',
+            'plugin_args': {}
+        },
+        'worker_options': {
+            'stl_service1': {
+                'metric': 'system.loadavg'
+            }
         }
     }
 }
