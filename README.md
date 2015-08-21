@@ -259,4 +259,6 @@ Each key in the `services.json` file defines an algorithm that will run (here `T
 
 * [Seasonal Trend Decomposition](https://github.com/trademob/anna-molly/wiki/Seasonal-Trend-Decomposition)
 * [Tukeys Outlier Filter](https://github.com/trademob/anna-molly/wiki/Tukey's-Outlier-Filter)
+* [Seasonal Trend Decomposition Ensemble](https://github.com/trademob/anna-molly/wiki/Seasonal-Trend-Decomposition-Ensemble)
+* [Flow Difference](https://github.com/trademob/anna-molly/wiki/Flow-Difference)
 
