@@ -3,7 +3,7 @@
     "scheduler_options": {
       "interval_secs": 30,
       "plugin_args": {
-        "name": "PollTukeysFilter"
+        "name": "TukeysFilter"
       }
     },
     "worker_options": {
