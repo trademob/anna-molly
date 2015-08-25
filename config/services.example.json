@@ -2,8 +2,9 @@
   "TukeysFilter": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollTukeysFilter",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "PollTukeysFilter"
+      }
     },
     "worker_options": {
       "service1": {
@@ -20,8 +21,9 @@
   "SeasonalDecomposition": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollSeasonalDecomposition",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "SeasonalDecomposition"
+      }
     },
     "worker_options": {
       "stl_service1": {
@@ -41,8 +43,9 @@
   "SeasonalDecompositionEnsemble": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollSeasonalDecompositionEnsemble",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "SeasonalDecompositionEnsemble"
+      }
     },
     "worker_options": {
       "stle_service1": {
@@ -62,8 +65,9 @@
   "FlowDifference": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollFlowDifference",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "FlowDifference"
+      }
     },
     "worker_options": {
       "fd_service1": {

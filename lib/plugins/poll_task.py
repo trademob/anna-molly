@@ -12,7 +12,7 @@ from lib.modules.base_task import BaseTask
 class PollTask(BaseTask):
     def __init__(self, config, logger, options):
         super(PollTask, self).__init__(config, logger, resource={'metric_sink': 'RedisSink'})
-        self.plugin_name = options['plugin_name']
+        self.plugin_name = options['name']
         self.plugin = getattr(plugins, self.plugin_name)
 
     def run(self):

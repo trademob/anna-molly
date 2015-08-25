@@ -27,5 +27,5 @@ for algorithm, algo_config in services_config.iteritems():
     CELERYBEAT_SCHEDULE[algorithm] = {
         'task': 'lib.app.task_runner',
         'schedule': timedelta(seconds=scheduler_options['interval_secs']),
-        'args': (PollTask, {'plugin_name': scheduler_options['plugin']})
+        'args': (PollTask, scheduler_options['plugin_args'])
     }

@@ -36,7 +36,7 @@ class TestPollTask(object):
     def test_poll_task_for_each_plugin(self):
             for plugin_name, plugin in PLUGINS.iteritems():
                 poll_task.app = Mock()
-                self.test_poll_task = poll_task.PollTask(config=analyzer, logger=None, options={'plugin_name': plugin_name})
+                self.test_poll_task = poll_task.PollTask(config=analyzer, logger=None, options={'name': plugin_name})
                 self.test_poll_task.should.have.property('plugin_name').being.equal(plugin_name)
                 self.test_poll_task.should.have.property('plugin').being.equal(plugin)
                 config = services[plugin_name]['worker_options']
