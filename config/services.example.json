@@ -28,13 +28,12 @@
         "metric": "system.loadavg",
         "period_length": 6,
         "seasons": 2,
-        "error_type": "norm",
-        "default": 0,
-        "error_handling": "tukey",
         "error_params": {
-          "scaling": 2,
-          "min_th_up": 0.1,
-          "min_th_low": -0.1
+          "error_type": "norm",
+          "error_handling": "quantile",
+          "alpha": 0.01,
+          "minimal_upper_threshold": 0.1,
+          "minimal_lower_threshold": -0.1
         }
       }
     }
