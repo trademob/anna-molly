@@ -46,8 +46,9 @@ services = {
     'TukeysFilter': {
         'scheduler_options': {
             'interval_secs': 60,
-            'plugin': 'PollTukeysFilter',
-            'plugin_args': {}
+            'plugin_args': {
+                'name': 'TukeysFilter'
+            }
         },
         'worker_options': {
             'service1': {
@@ -60,15 +61,53 @@ services = {
     'SeasonalDecomposition': {
         'scheduler_options': {
             'interval_secs': 300,
-            'plugin': 'PollSeasonalDecomposition',
-            'plugin_args': {}
+            'plugin_args': {
+                'name': 'SeasonalDecomposition'
+            }
         },
         'worker_options': {
             'stl_service1': {
-                'metric': 'system.loadavg'
+                'metric': 'cpu',
+                'period_length': 3,
+                'seasons': 2,
+                'interval': 1,
+                'error_params': {}
             }
         }
-    }
+    },
+    'SeasonalDecompositionEnsemble': {
+        'scheduler_options': {
+            'interval_secs': 180,
+            'plugin_args': {
+                'name': 'SeasonalDecompositionEnsemble'
+            }
+        },
+        'worker_options': {
+            'stle_service1': {
+                'metric': 'cpu',
+                'period_length': 3,
+                'seasons': 2,
+                'interval': 1,
+                'error_params': {}
+            }
+        }
+    },
+    'FlowDifference': {
+        'scheduler_options': {
+            'interval_secs': 600,
+            'plugin_args': {
+                'name': 'FlowDifference'
+            }
+        },
+        'worker_options': {
+            'flow_service1': {
+                'in_metric': 'service1.out',
+                'out_metric': 'service2.in',
+                'stale': 10,
+                'error_params': {}
+            }
+        }
+    },
 }
 
 collector = {
@@ -76,7 +115,7 @@ collector = {
         'blacklist': ['.*_crit.*'],
         'whitelist': {
             'host.ip.*serv1.*cpu.*': [{
-              'RedisTimeStamped': { 'ttl': 10 }
+                'RedisTimeStamped': {'ttl': 10}
             }]
         }
     }

@@ -2,8 +2,9 @@
   "TukeysFilter": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollTukeysFilter",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "TukeysFilter"
+      }
     },
     "worker_options": {
       "service1": {
@@ -20,21 +21,63 @@
   "SeasonalDecomposition": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollSeasonalDecomposition",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "SeasonalDecomposition"
+      }
     },
     "worker_options": {
       "stl_service1": {
         "metric": "system.loadavg",
         "period_length": 6,
         "seasons": 2,
-        "error_type": "norm",
-        "default": 0,
-        "error_handling": "tukey",
+        "error_params": {
+          "error_type": "norm",
+          "error_handling": "quantile",
+          "alpha": 0.01,
+          "minimal_upper_threshold": 0.1,
+          "minimal_lower_threshold": -0.1
+        }
+      }
+    }
+  },
+  "SeasonalDecompositionEnsemble": {
+    "scheduler_options": {
+      "interval_secs": 30,
+      "plugin_args": {
+        "name": "SeasonalDecompositionEnsemble"
+      }
+    },
+    "worker_options": {
+      "stle_service1": {
+        "metric": "system.loadavg",
+        "period_length": 6,
+        "seasons": 2,
+        "interval": 10,
         "error_params": {
           "scaling": 2,
-          "min_th_up": 0.1,
-          "min_th_low": -0.1,
+          "minimal_upper_threshold": 0.1,
+          "minimal_lower_threshold": -0.1,
+          "treshold": 2
+        }
+      }
+    }
+  },
+  "FlowDifference": {
+    "scheduler_options": {
+      "interval_secs": 30,
+      "plugin_args": {
+        "name": "FlowDifference"
+      }
+    },
+    "worker_options": {
+      "fd_service1": {
+        "in_metric": "service1.out",
+        "out_metric": "service2.in",
+        "stale": 10,
+        "error_params": {
+          "scaling": 2,
+          "minimal_upper_threshold": 0.1,
+          "minimal_lower_threshold": -0.1
         }
       }
     }

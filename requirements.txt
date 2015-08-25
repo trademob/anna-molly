@@ -1,7 +1,7 @@
 boltons==0.5.1
 celery==3.1.18
 git-pylint-commit-hook==2.0.7
-https://github.com/trademob/t-digest/archive/v1.0.0.zip
+https://github.com/trademob/t-digest/archive/v1.1.0.zip
 logilab-astng==0.24.3
 logilab-common==0.63.2
 mock==1.0.1

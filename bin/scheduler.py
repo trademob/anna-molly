@@ -10,7 +10,7 @@ ROOT = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(ROOT)
 
 from lib.modules import config
-from lib.plugins import poll_tasks
+from lib.plugins.poll_task import PollTask
 
 analyzer_file = os.path.join(os.path.dirname(__file__), '../config/analyzer.json')
 analyzer_config = config.load(analyzer_file)
@@ -24,9 +24,8 @@ CELERYBEAT_SCHEDULE = {}
 
 for algorithm, algo_config in services_config.iteritems():
     scheduler_options = algo_config['scheduler_options']
-    plugin = getattr(poll_tasks, scheduler_options['plugin'])
     CELERYBEAT_SCHEDULE[algorithm] = {
         'task': 'lib.app.task_runner',
         'schedule': timedelta(seconds=scheduler_options['interval_secs']),
-        'args': (plugin, scheduler_options['plugin_args'])
+        'args': (PollTask, scheduler_options['plugin_args'])
     }

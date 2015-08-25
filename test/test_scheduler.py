@@ -2,13 +2,11 @@ import sys
 import os.path
 from datetime import timedelta
 
-from mock import Mock
-
 ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(os.path.join(ROOT_DIR, 'bin'))
 
 import scheduler
-from lib.plugins import poll_tasks
+from lib.plugins.poll_task import PollTask
 
 
 class TestScheduler(object):
@@ -25,11 +23,21 @@ class TestScheduler(object):
             'TukeysFilter': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=60),
-                'args': (poll_tasks.PollTukeysFilter, {})
+                'args': (PollTask, {'name': 'TukeysFilter'})
             },
             'SeasonalDecomposition': {
                 'task': 'lib.app.task_runner',
                 'schedule': timedelta(seconds=300),
-                'args': (poll_tasks.PollSeasonalDecomposition, {})
+                'args': (PollTask, {'name': 'SeasonalDecomposition'})
+            },
+            'SeasonalDecompositionEnsemble': {
+                'task': 'lib.app.task_runner',
+                'schedule': timedelta(seconds=180),
+                'args': (PollTask, {'name': 'SeasonalDecompositionEnsemble'})
+            },
+            'FlowDifference': {
+                'task': 'lib.app.task_runner',
+                'schedule': timedelta(seconds=600),
+                'args': (PollTask, {'name': 'FlowDifference'})
             }
         })

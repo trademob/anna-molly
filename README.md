@@ -235,8 +235,9 @@ Plugins push the result data into the OutputSink.
   "TukeysFilter": {
     "scheduler_options": {
       "interval_secs": 30,
-      "plugin": "PollTukeysFilter",
-      "plugin_args": {}
+      "plugin_args": {
+        "name": "TukeysFilter"
+      }
     },
     "worker_options": {
       "service1": {}
@@ -251,12 +252,14 @@ Each key in the `services.json` file defines an algorithm that will run (here `T
 
 - **scheduler_options** - celery config
     - **interval_secs** - how often the tasks should run
-    - **plugin** - the Poll Task to start, which places tasks for the Task Runner
     - **plugin_args** - arguments for the Poll Task
+      - name - Mandatory plugin name.
 - **worker_options** - options for the each Task Runner
 
 ## Algorithms
 
 * [Seasonal Trend Decomposition](https://github.com/trademob/anna-molly/wiki/Seasonal-Trend-Decomposition)
 * [Tukeys Outlier Filter](https://github.com/trademob/anna-molly/wiki/Tukey's-Outlier-Filter)
+* [Seasonal Trend Decomposition Ensemble](https://github.com/trademob/anna-molly/wiki/Seasonal-Trend-Decomposition-Ensemble)
+* [Flow Difference](https://github.com/trademob/anna-molly/wiki/Flow-Difference)
 
