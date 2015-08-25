@@ -84,7 +84,7 @@ class TestSeasonalDecompositionEnsemble(object):
 
     def test_read_tdigest(self):
         self.test_seasonal_decomposition_ensemble.metric_sink.read = self.stub_read_metric_sink_tdigest
-        for error_type in ['norm', 'stl']:
+        for error_type in ['norm', 'abs']:
             self.test_seasonal_decomposition_ensemble._read_tdigest(error_type)
             exp_tdigest = '[[-10, 1], [0, 1], [10, 1]]'
             expect(self.test_seasonal_decomposition_ensemble.tdigests[error_type].serialize()).to.be.equal(exp_tdigest)
@@ -148,7 +148,7 @@ class TestSeasonalDecompositionEnsemble(object):
             config=analyzer, logger=None, options=self.options)
 
         states = self.test_seasonal_decomposition_ensemble.process(data)
-        exp_states = (10.0, 3.0, 6.0, 9.0, 1.0, 0.1, {'stl_quantile': {'flag': 0.0}, 'norm_tukey': {'flag': 1.0}, 'overall': {'consensus': 2.0, 'flag': 1}, 'stl_tukey': {'flag': 1.0}, 'norm_quantile': {'flag': 0.0}})
+        exp_states = (10.0, 3.0, 6.0, 9.0, 1.0, 0.1, {'abs_quantile': {'flag': 0.0}, 'norm_tukey': {'flag': 1.0}, 'overall': {'consensus': 2.0, 'flag': 1}, 'abs_tukey': {'flag': 1.0}, 'norm_quantile': {'flag': 0.0}})
         expect(states).to.be.equal(exp_states)
 
     def test_process_for_valid_neg_input(self):
@@ -160,7 +160,7 @@ class TestSeasonalDecompositionEnsemble(object):
             config=analyzer, logger=None, options=self.options)
 
         states = self.test_seasonal_decomposition_ensemble.process(data)
-        exp_states = (8.0, 3.0, 6.0, 9.0, -1.0, -1.0 / 9, {'stl_quantile': {'flag': 0.0}, 'norm_tukey': {'flag': 1.0}, 'overall': {'consensus': 2.0, 'flag': 1}, 'stl_tukey': {'flag': 1.0}, 'norm_quantile': {'flag': 0.0}})
+        exp_states = (8.0, 3.0, 6.0, 9.0, -1.0, -1.0 / 9, {'abs_quantile': {'flag': 0.0}, 'norm_tukey': {'flag': 1.0}, 'overall': {'consensus': 2.0, 'flag': 1}, 'abs_tukey': {'flag': 1.0}, 'norm_quantile': {'flag': 0.0}})
         expect(states).to.be.equal(exp_states)
 
     def test_write(self):

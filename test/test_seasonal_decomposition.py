@@ -140,7 +140,7 @@ class TestSeasonalDecomposition(object):
                 TimeSeriesTuple('service1', 120, 10.1)]
 
         self.options['params']['error_params']['error_handling'] = 'tukey'
-        self.options['params']['error_params']['error_type'] = 'stl'
+        self.options['params']['error_params']['error_type'] = 'abs'
         self.test_seasonal_decomposition = seasonal_decomposition.SeasonalDecomposition(
             config=analyzer, logger=None, options=self.options)
 

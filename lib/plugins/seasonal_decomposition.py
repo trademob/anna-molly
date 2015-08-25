@@ -83,26 +83,29 @@ class SeasonalDecomposition(BaseTask):
                 r_res_ts = asarray(r_res[0])
                 seasonal = r_res_ts[:, 0][-1]
                 trend = r_res_ts[:, 1][-1]
-                # _error = r_res_ts[:, 2][-1]
+                # error_abs = r_res_ts[:, 2][-1]
                 # due to outtages the trend component can be decreased and
                 # and therefore negative model values are possible
                 model = seasonal + trend
                 model = max(0.01, model)
-                _error = input_val - model
+                error_abs = input_val - model
             except Exception as e:
                 self.logger.error('%s :: STL Call failed: %s. Exiting' % (self.service, e))
                 return (0.0, 0.0, 0.0, 0.0, 0.0, {'flag': -1})
 
             # normalize error
-            if _error <= 0:
-                error_norm = _error / model
+            if error_abs <= 0:
+                error_norm = error_abs / model
             else:
-                error_norm = _error / input_val
+                if input_val:
+                    error_norm = error_abs / input_val
+                else:
+                    error_norm = 1.0
 
             if error_type == 'norm':
                 error = error_norm
-            elif error_type == 'stl':
-                error = _error
+            elif error_type == 'abs':
+                error = error_abs
 
             # add error to distribution and evaluate
             self.tdigest.add(error, 1.0)
