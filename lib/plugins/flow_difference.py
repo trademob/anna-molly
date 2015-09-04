@@ -38,7 +38,7 @@ class FlowDifference(BaseTask):
         stale_time = self.params['stale']
         data = [el for el in self.metric_sink.read(metric)]
 
-        if not data[0]:
+        if not data or None in data:
             self.logger.error('%s :: No Datapoints for %s. Exiting' % (metric, self.service))
             return None
 
