@@ -6,10 +6,10 @@ class TimeSeriesTuple(namedtuple('TimeSeriesTuple', 'name timestamp value')):
     __slots__ = ()
 
     def __str__(self):
-        return "TimeSeriesTuple: name=%s timestamp=%d value=%f" % (
+        return "TimeSeriesTuple: name={0} timestamp={1} value={2}".format(
             str(self.name),
             int(self.timestamp),
-            float(self.value)
+            float(self.value) if self.value else None
         )
 
 
