@@ -6,6 +6,11 @@ echo Installing depedencies...
 sudo apt-get update
 sudo apt-get install -y build-essential python-pip redis-server automake r-base python-dev libtool
 sudo pip install -U pip
+
+#InsecurePlatformWarning
+sudo pip install --upgrade requests[security]
+
+#install project dependencies
 sudo pip install -r /opt/anna-molly/requirements.txt
 
 SCRIPT
